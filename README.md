@@ -1,174 +1,273 @@
-# just-the-docs-template
+# The `laserbeamFoam` Suite of Solvers
 
-This is a *bare-minimum* template to create a [Jekyll] site that:
+![alt text](https://github.com/laserbeamFoam/LaserbeamFoam/blob/main/images/Powder.png?raw=true)
 
-- uses the [Just the Docs] theme;
-- can be built and published on [GitHub Pages];
-- can be built and previewed locally, and published on other platforms.
+## Overview
 
-More specifically, the created site:
+This is a minimal landing page for the `laserbeamFoam` suite suite of solvers
+ available at [https://github.com/laserbeamfoam/LaserbeamFoam](https://github.com/laserbeamfoam/LaserbeamFoam).
 
-- uses a gem-based approach, i.e. uses a `Gemfile` and loads the `just-the-docs` gem;
-- uses the [GitHub Pages / Actions workflow] to build and publish the site on GitHub Pages.
+Currently, this repository contains several solvers:
 
-To get started with creating a site, simply:
+### `laserbeamFoam`
 
-1. click "[use this template]" to create a GitHub repository
-2. go to Settings > Pages > Build and deployment > Source, and select GitHub Actions
+A volume-of-fluid (VOF) solver for studying high energy density laser-based
+advanced manufacturing processes and laser-substrate interactions. This
+implementation treats the metallic substrate and shielding gas phase as
+in-compressible. The solver fully captures the metallic substrate's
+fusion/melting state transition. For the vapourisation of the substrate, the
+explicit volumetric dilation due to the vapourisation state transition is
+neglected; instead, a phenomenological recoil pressure term is used to capture
+the contribution to the momentum and energy fields due to vaporisation events.
+laserbeamFoam also captures surface tension effects, the temperature dependence
+of surface tension (Marangoni) effects, latent heat effects due to
+melting/fusion (and vapourisation), buoyancy effects due to the thermal
+expansion of the phases using a Boussinesq approximation, and momentum damping
+due to solidification.
+A ray-tracing algorithm is implemented that permits the incident Gaussian laser
+beam to be discretised into several 'Rays' based on the computational grid
+resolution. The 'Rays' of this incident laser beam are then tracked through the
+domain through their multiple reflections, with the energy deposited by each
+ray determined through the Fresnel equations. The solver approach is extended
+from the adiabatic two-phase interFoam code developed by
+[OpenCFD Ltd.](http://openfoam.com/) to include non-isothermal state transition
+physics and ray-tracing heat source application.
 
-If you want to maintain your docs in the `docs` directory of an existing project repo, see [Hosting your docs from an existing project repo](#hosting-your-docs-from-an-existing-project-repo).
+### `arraylaserbeamFoam`
 
-After completing the creation of your new site on GitHub, update it as needed:
+An extension of laserbeamFoam to N-laser sources that can each have their parameters
+ set independently.
 
-## Replace the content of the template pages
+Target applications for the solvers included in this repository include:
 
-Update the following files to your own content:
+* Laser Welding
+* Laser Drilling
+* Laser Powder Bed Fusion
+* Selective Laser Melting
+* Diode Array Additive Manufacturing
 
-- `index.md` (your new home page)
-- `README.md` (information for those who access your site repo on GitHub)
+### `multiComponentlaserbeamFoam`
 
-## Changing the version of the theme and/or Jekyll
+An extension of the laserbeamfoam solver to multi-component metallic
+substrates. This solver can simulate M-Component metallic substrates in the
+presence of gas-phases. Diffusion is treated through a Fickian diffusion model
+with the diffusivity specified through 'diffusion pairs', and the interface
+compression is again specified pair-wise. The miscible phases in the simulation
+should have diffusivity specified between them, and immiscible phase pairs
+should have an interface compression term specified between them (typically 1).
 
-Simply edit the relevant line(s) in the `Gemfile`.
+Target applications for the solvers included in this repository include:
 
-## Adding a plugin
+* Dissimilar Laser Welding
+* Dissimilar Laser Drilling
+* Dissimilar Laser Powder Bed Fusion
+* Dissimilar Selective Laser Melting
 
-The Just the Docs theme automatically includes the [`jekyll-seo-tag`] plugin.
+## Installation
 
-To add an extra plugin, you need to add it in the `Gemfile` *and* in `_config.yml`. For example, to add [`jekyll-default-layout`]:
+The current version of the code utilises the
+[OpenFOAM-10 libraries](https://openfoam.org/version/10/). A branch that
+compiles against the older OpenFOAM-6 libraries is provided. The code has been
+developed and tested using an Ubuntu installation but should work on any
+operating system capable of installing OpenFOAM. To install the laserbeamFoam
+solvers, first, install and load
+[OpenFOAM-10](https://openfoam.org/download/10-ubuntu/), then clone and build
+the laserbeamFoam library:
 
-- Add the following to your site's `Gemfile`:
+```bash
+git clone https://github.com/micmog/laserbeamFoam.git laserbeamFoam
+./Allwmake -j
+```
 
-  ```ruby
-  gem "jekyll-default-layout"
-  ```
+where the `-j` option uses all CPU cores available for building.
 
-- And add the following to your site's `_config.yml`:
+The installation can be tested using the tutorial cases described below.
 
-  ```yaml
-  plugins:
-    - jekyll-default-layout
-  ```
+## Tutorial cases
 
-Note: If you are using a Jekyll version less than 3.5.0, use the `gems` key instead of `plugins`.
+The tutorial cases can be run with the included `Allrun` scripts, i.e.
 
-## Publishing your site on GitHub Pages
+```bash
+./Allrun
+```
 
-1.  If your created site is `YOUR-USERNAME/YOUR-SITE-NAME`, update `_config.yml` to:
+The `Allrun` script prepares the mesh and fields, and runs the solver. Typically
+ the following steps are performed:
 
-    ```yaml
-    title: YOUR TITLE
-    description: YOUR DESCRIPTION
-    theme: just-the-docs
+```bash
+# Create the 0 directory
+cp -r initial 0
 
-    url: https://YOUR-USERNAME.github.io/YOUR-SITE-NAME
+# Create the mesh
+blockMesh
 
-    aux_links: # remove if you don't want this link to appear on your pages
-      Template Repository: https://github.com/YOUR-USERNAME/YOUR-SITE-NAME
-    ```
+# Set the initial fields
+setFields
 
-2.  Push your updated `_config.yml` to your site on GitHub.
+# Run the solver in serial
+laserbeamFoam
 
-3.  In your newly created repo on GitHub:
-    - go to the `Settings` tab -> `Pages` -> `Build and deployment`, then select `Source`: `GitHub Actions`.
-    - if there were any failed Actions, go to the `Actions` tab and click on `Re-run jobs`.
+# Or run the solver in parallel, e.g. on 6 cores
+#decomposePar
+#mpirun -np 6 laserbeamFoam -parallel &> log.laserbeamFoam
 
-## Building and previewing your site locally
+Cases can be cleaned and reset using the included `Allclean` scripts, i.e.
 
-Assuming [Jekyll] and [Bundler] are installed on your computer:
+```bash
+./Allclean
+``
 
-1.  Change your working directory to the root directory of your site.
+### 2D Plate Examples
 
-2.  Run `bundle install`.
+In these cases, the penetration rate of an incident laser source is investigated
+ based on the angle of incidence of the laser beam. Two cases are presented
+ where the beam is perpendicular to the substrate or 45 degrees to the initial
+ plate normal.
 
-3.  Run `bundle exec jekyll serve` to build your site and preview it at `localhost:4000`.
+### 3D Plate Example
 
-    The built site is stored in the directory `_site`.
+In this case, the two-dimensional 45-degree example is extended to three dimensions.
 
-## Publishing your built site on a different platform
+### 2D circular particles Example
 
-Just upload all the files in the directory `_site`.
+In this example, a series of circular metallic regions are seeded on top of a
+ planar substrate. The laser heat source traverses the domain and melts these
+ regions, and their topology evolves accordingly.
 
-## Customization
+### 2D Laser-Powder Bed Fusion Example
 
-You're free to customize sites that you create with this template, however you like!
+In this example, a two-dimensional domain is seeded with many small powder
+ particles with a complex size distribution, representative of that observed in
+ the L-PBF manufacturing process. The laser heat source traverses the domain, and
+ some particles melt and re-solidify in the heat source's wake.
 
-[Browse our documentation][Just the Docs] to learn more about how to use this theme.
+## Algorithm
 
-## Hosting your docs from an existing project repo
+Initially, the solver loads the mesh, reads in fields and boundary conditions,
+ and selects the turbulence model (if specified). The main solver loop is then
+ initiated. First, the time step is dynamically modified to ensure numerical
+ stability. Next, the two-phase fluid mixture properties and turbulence
+ quantities are updated. The discretised phase-fraction equation is then solved
+ for a user-defined number of subtime steps (typically 3) using the
+ multidimensional universal limiter with explicit solution solver [MULES](https://openfoam.org/release/2-3-0/multiphase/).
+ This solver is included in the OpenFOAM library and performs conservative
+ solutions of hyperbolic convective transport equations with defined bounds (0
+ and 1 for $α_1$). Once the updated phase field is obtained, the program enters
+ the pressure–velocity loop, where p and u are corrected alternatingly. $T$ is
+ also solved in this loop so that the buoyancy predictions are correct for the
+ $U$ and $p$ fields. Correcting the pressure and velocity fields in the sequence
+ is known as pressure implicit with the splitting of operators (PISO). In the
+ OpenFOAM environment, PISO is repeated for multiple iterations at each time
+ step. This process is called the merged PISO- semi-implicit method for
+ pressure-linked equations (SIMPLE) or the pressure-velocity loop (PIMPLE)
+ process, where SIMPLE is an iterative pressure–velocity solution algorithm.
+ PIMPLE continues for a user-specified number of iterations.
 
-You might want to maintain your docs in an existing project repo. Instead of creating a new repo using the [just-the-docs template](https://github.com/just-the-docs/just-the-docs-template), you can copy the template files into your existing repo and configure the template's Github Actions workflow to build from a `docs` directory. You can clone the template to your local machine or download the `.zip` file to access the files.
+The main solver loop iterates until program termination. A summary of the
+ simulation algorithm is presented below:
 
-### Copy the template files
+* `laserbeamFoam` Simulation Algorithm Summary:
 
-1.  Create a `.github/workflows` directory at your project root if your repo doesn't already have one. Copy the `pages.yml` file into this directory. GitHub Actions searches this directory for workflow files.
+  * Initialise simulation data and mesh
+  * WHILE $t < t_{\text{end}}$ DO
+  * 1. Update $\Delta t$ for stability
+  * 2. Phase equation sub-cycle
+  * 3. Update interface location for the heat source application
+  * 4. Update fluid properties
+  * 5. Ray-tracing for Heat Source application at the surface
+  * 6. PISO Loop
+    * 1. Form $U$ equation
+    * 2. Energy Transport Loop
+      * 1. Solve $T$ equation
+      * 2. Update fluid fraction field
+      * 3. Re-evaluate source terms due to latent heat
+    * 3. PISO
+        * 1. Obtain and correct face fluxes
+        * 2. Solve $p$ Poisson equation
+        * 3. Correct $U$
+  * 7. Write fields
 
-2.  Create a `docs` directory at your project root and copy all remaining template files into this directory.
 
-### Modify the GitHub Actions workflow
+There are no constraints on how the computational domain is discretised.
 
-The GitHub Actions workflow that builds and deploys your site to Github Pages is defined by the `pages.yml` file. You'll need to edit this file to that so that your build and deploy steps look to your `docs` directory, rather than the project root.
+## Visualising the rays in ParaView
 
-1.  Set the default `working-directory` param for the build job.
+`laserbeamFoam` writes the individual ray beams to `VTK/rays_<TIME_INDEX>.vtk`,
+ where `<TIME_INDEX>` is the time-step index, i.e. 1, 2, 3, etc. ParaView
+ recognises that these files are in a sequence, so they can all be loaded
+ together: `File` -> `Open...` -> Select `rays_..vtk`. As the VTK files do not
+ store time-step information, by default, ParaView assumes the time-step size
+ for the rays is 1 s; however, you can use the ParaView “Temporal Shift Scale”
+ filter on the rays object to sync the ray time with the OpenFOAM model time,
+ where the OpenFOAM time-step value (e.g. 1e-5) is used as the `Scale`.
 
-    ```yaml
-    build:
-      runs-on: ubuntu-latest
-      defaults:
-        run:
-          working-directory: docs
-    ```
 
-2.  Set the `working-directory` param for the Setup Ruby step.
+## License
+OpenFOAM, and by extension, the `laserbeamFoam` application, is licensed free
+ and open source only under the [GNU General Public Licence version 3](https://www.gnu.org/licenses/gpl-3.0.en.html).
+ One reason for OpenFOAM’s popularity is that its users are granted the freedom
+ to modify and redistribute the software and have a right to continued free use
+ within the terms of the GPL.
 
-    ```yaml
-    - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.3'
-          bundler-cache: true
-          cache-version: 0
-          working-directory: '${{ github.workspace }}/docs'
-    ```
+## Acknowledgements
+Tom Flint and Joe Robson thank the EPSRC for financial support through the
+ associated programme grant LightFORM (EP/R001715/1). Joe Robson thanks the
+ Royal Academy of Engineering/DSTL for funding through the RAEng/DSTL Chair in
+ Alloys for Extreme Environments.
 
-3.  Set the path param for the Upload artifact step:
+Philip Cardiff and Gowthaman Parivendhan authors gratefully acknowledge financial
+ support from I-Form, funded by Science Foundation Ireland (SFI) Grant Numbers
+ 16/RC/3872 and 21/RC/10295 P2, co-funded under the European Regional Development
+ Fund and by I-Form industry partners. In addition, Philip Cardiff received
+ funding from the European Research Council (ERC) under the European Union’s
+ Horizon 2020 research and innovation programme (Grant Agreement No. 101088740),
+ and acknowledges financial support from the Irish Research Council through the
+ Laureate programme, grant number IRCLA/2017/45, and Bekaert, through the Bekaert
+ University Technology Centre (UTC) at University College Dublin
+ (www.ucd.ie/bekaert).
 
-    ```yaml
-    - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: docs/_site/
-    ```
+## Citing This Work
+If you use `laserbeamFoam` in your work. Please use the following to cite our work:
 
-4.  Modify the trigger so that only changes within the `docs` directory start the workflow. Otherwise, every change to your project (even those that don't affect the docs) would trigger a new site build and deploy.
+- laserbeamFoam: Laser ray-tracing and thermally induced state transition
+  simulation toolkit. TF Flint, JD Robson, G Parivendhan, P Cardiff - SoftwareX,
+  2023 - https://doi.org/10.1016/j.softx.2022.101299
 
-    ```yaml
-    on:
-      push:
-        branches:
-          - "main"
-        paths:
-          - "docs/**"
-    ```
 
-## Licensing and Attribution
+## References
 
-This repository is licensed under the [MIT License]. You are generally free to reuse or extend upon this code as you see fit; just include the original copy of the license (which is preserved when you "make a template"). While it's not necessary, we'd love to hear from you if you do use this template, and how we can improve it for future use!
+Flint, T. F., Robson, J. D., Parivendhan, G., & Cardiff, P. (2023).
+ laserbeamFoam: Laser ray-tracing and thermally induced state transition
+ simulation toolkit. SoftwareX, 21, 101299.
 
-The deployment GitHub Actions workflow is heavily based on GitHub's mixed-party [starter workflows]. A copy of their MIT License is available in [actions/starter-workflows].
+Flint, T. F., Parivendhan, G., Ivankovic, A., Smith, M. C., & Cardiff, P. (2022).
+ beamWeldFoam: Numerical simulation of high energy density fusion and
+ vapourisation-inducing processes. SoftwareX, 18, 101065.
 
-----
+Flint, T. F., et al. A fundamental analysis of factors affecting chemical
+ homogeneity in the laser powder bed fusion process. International Journal of
+ Heat and Mass Transfer 194 (2022): 122985.
 
-[^1]: [It can take up to 10 minutes for changes to your site to publish after you push the changes to GitHub](https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll/creating-a-github-pages-site-with-jekyll#creating-your-site).
+Flint, T. F., T. Dutilleul, and W. Kyffin. A fundamental investigation into the
+ role of beam focal point, and beam divergence, on thermo-capillary stability
+ and evolution in electron beam welding applications. International Journal of
+ Heat and Mass Transfer 212 (2023): 124262.
 
-[Jekyll]: https://jekyllrb.com
-[Just the Docs]: https://just-the-docs.github.io/just-the-docs/
-[GitHub Pages]: https://docs.github.com/en/pages
-[GitHub Pages / Actions workflow]: https://github.blog/changelog/2022-07-27-github-pages-custom-github-actions-workflows-beta/
-[Bundler]: https://bundler.io
-[use this template]: https://github.com/just-the-docs/just-the-docs-template/generate
-[`jekyll-default-layout`]: https://github.com/benbalter/jekyll-default-layout
-[`jekyll-seo-tag`]: https://jekyll.github.io/jekyll-seo-tag
-[MIT License]: https://en.wikipedia.org/wiki/MIT_License
-[starter workflows]: https://github.com/actions/starter-workflows/blob/main/pages/jekyll.yml
-[actions/starter-workflows]: https://github.com/actions/starter-workflows/blob/main/LICENSE
+Parivendhan, G., Cardiff, P., Flint, T., Tuković, Ž., Obeidi, M., Brabazon, D.,
+ Ivanković, A. (2023) A numerical study of processing parameters and their
+ effect on the melt-track profile in Laser Powder Bed Fusion processes, Additive
+ Manufacturing, 67, 10.1016/j.addma.2023.103482.
+
+## Disclaimer
+
+This offering is not approved or endorsed by OpenCFD Limited, producer and
+ distributor of the OpenFOAM software via [www.openfoam.com](https://www.openfoam.com),
+ and owner of the OPENFOAM® and OpenCFD® trade marks.
+
+
+## Acknowledgement
+
+OPENFOAM® is a registered trademark of OpenCFD Limited, producer and distributor
+ of the OpenFOAM software via [www.openfoam.com](https://www.openfoam.com).
+
+![visitors](https://visitor-badge.deta.dev/badge?page_id=micmog.LaserbeamFoam)
