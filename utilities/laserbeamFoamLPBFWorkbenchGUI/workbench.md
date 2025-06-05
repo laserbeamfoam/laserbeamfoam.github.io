@@ -7,7 +7,7 @@ parent: Utilities
 
 # LPBF Workbench
 
-[Go to LPBF Workbench App](app.html)
+[Go to LPBF Workbench App](app.html){:target="_blank"}
 
 ## Description
 
