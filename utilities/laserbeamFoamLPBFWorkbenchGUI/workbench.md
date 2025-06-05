@@ -7,7 +7,7 @@ parent: Utilities
 
 # LPBF Workbench
 
-[Go to LPBF Workbench App](workbench_app.html}
+[Go to LPBF Workbench App](app.html}
 
 ## Description
 
