@@ -1,0 +1,56 @@
+---
+title: decomposeParDict
+layout: page
+nav_order: 4
+parent: system
+---
+
+
+
+## decomposeParDict
+
+Example from tutorial `Plate2D`:
+```cpp
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  10
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      decomposeParDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+numberOfSubdomains 4;
+
+method          simple;
+
+simpleCoeffs
+{
+    n               (1 2 2);
+}
+
+hierarchicalCoeffs
+{
+    n               (1 1 1);
+    order           xyz;
+}
+
+manualCoeffs
+{
+    dataFile        "";
+}
+
+distributed     no;
+
+roots           ( );
+
+
+// ************************************************************************* //
+```

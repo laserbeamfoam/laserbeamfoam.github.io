@@ -6,6 +6,10 @@ parent: laserbeamFoam
 ---
 
 
+## [Input Files]({% link solvers/laserbeamFoam/input_files.md %})
+
+See input files for walkthrough examples of every input constant and variable required/optional to run a laserbeamFoam simulation. The example files correspond to the `Plate2D` tutorial.
+
 ## Algorithm
 
 Initially, the solver loads the mesh, reads in fields and boundary conditions, and selects the turbulence model (if specified). The main solver loop is then initiated. First, the time step is dynamically modified to ensure numerical stability. Next, the two-phase fluid mixture properties and turbulence quantities are updated. The discretised phase-fraction equation is then solved for a user-defined number of subtime steps (typically 3) using the multidimensional universal limiter with explicit solution solver [MULES](https://openfoam.org/release/2-3-0/multiphase/). This solver is included in the OpenFOAM library and performs conservative solutions of hyperbolic convective transport equations with defined bounds (0 and 1 for $α_1$). Once the updated phase field is obtained, the program enters the pressure–velocity loop, where p and u are corrected alternatingly. $T$ is also solved in this loop so that the buoyancy predictions are correct for the $U$ and $p$ fields. Correcting the pressure and velocity fields in the sequence is known as pressure implicit with the splitting of operators (PISO). In the OpenFOAM environment, PISO is repeated for multiple iterations at each time step. This process is called the merged PISO- semi-implicit method for pressure-linked equations (SIMPLE) or the pressure-velocity loop (PIMPLE) process, where SIMPLE is an iterative pressure–velocity solution algorithm. PIMPLE continues for a user-specified number of iterations. 

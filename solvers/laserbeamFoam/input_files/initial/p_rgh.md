@@ -1,0 +1,63 @@
+---
+title: p_rgh
+layout: page
+nav_order: 4
+parent: initial
+---
+
+
+
+## p_rgh
+
+Example from tutorial `Plate2D`:
+```cpp
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  3.0.1                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      p_rgh;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [1 -1 -2 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    frontAndBack
+    {
+        type            fixedFluxPressure;
+        value           uniform 0;
+    }
+
+    lowerWall
+    {
+        type            fixedFluxPressure;
+        value           uniform 0;
+    }
+
+    atmosphere
+    {
+        type            totalPressure;
+        p0              uniform 0;
+        U               U;
+        phi             phi;
+    }
+
+    "defaultFaces|rightWall|leftWall"
+    {
+        type            empty;
+    }
+}
+
+// ************************************************************************* //
+```

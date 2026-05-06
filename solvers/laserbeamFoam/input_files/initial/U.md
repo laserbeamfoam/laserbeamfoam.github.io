@@ -1,0 +1,62 @@
+---
+title: U
+layout: page
+nav_order: 4
+parent: initial
+---
+
+
+
+## U
+
+Example from tutorial `Plate2D`:
+```cpp
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  3.0.1                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    location    "0";
+    object      U;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform (0 0 0);
+
+boundaryField
+{
+    frontAndBack{
+        type            slip;
+    }
+    lowerWall
+    {
+        type            slip;
+
+    }
+    atmosphere
+    {
+        type pressureInletOutletVelocity;
+        phi phi;
+        rho rho;
+        tangentialVelocity uniform (0 0 0);
+        value uniform (0 0 0.5);
+    }
+
+    "defaultFaces|rightWall|leftWall"
+    {
+        type            empty;
+    }
+}
+
+
+// ************************************************************************* //
+```

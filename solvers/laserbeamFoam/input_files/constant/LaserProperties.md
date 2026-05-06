@@ -1,0 +1,93 @@
+---
+title: LaserProperties
+layout: page
+nav_order: 4
+parent: constant
+---
+
+
+
+## LaserProperties
+
+Defines properties of the simulated laser beam incident on the substrate.
+
+Example from tutorial `Plate2D`:
+```cpp
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  6
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      PhaseFieldProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+radialPolarHeatSource no;
+
+lasers
+(
+    laser0
+    {
+        timeVsLaserPosition
+        {
+            file    "$FOAM_CASE/constant/timeVsLaserPosition0";
+            outOfBounds clamp;
+        }
+
+        timeVsLaserPower
+        {
+            file    "$FOAM_CASE/constant/timeVsLaserPower0";
+            outOfBounds clamp;
+        }
+
+        // Laser angle (normalised in the code)
+        V_incident (0 1 1);
+
+        // Laser radius
+        laserRadius 0.0005;
+
+        // Laser physical properties
+        wavelength      1.064e-6;
+        e_num_density   5.83e29;
+
+        // Laser profile type (defaults to 2)
+        //Radius_Flavour 2.0;
+    }
+
+    laser1
+    {
+        timeVsLaserPosition
+        {
+            file    "$FOAM_CASE/constant/timeVsLaserPosition1";
+            outOfBounds clamp;
+        }
+
+        timeVsLaserPower
+        {
+            file    "$FOAM_CASE/constant/timeVsLaserPower1";
+            outOfBounds clamp;
+        }
+
+        // Laser angle (normalised in the code)
+        V_incident (0 1 0);
+
+        // Laser radius
+        laserRadius 0.0005;
+
+        // Laser physical properties
+        wavelength      1.064e-6;
+        e_num_density   5.83e29;
+
+        // Laser profile type (defaults to 2)
+        //Radius_Flavour 2.0;
+    }
+);
+```
